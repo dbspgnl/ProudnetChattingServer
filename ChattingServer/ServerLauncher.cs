@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -57,5 +58,7 @@ namespace ChattingServer
         {
             NetServer.Dispose();
         }
+
+        public static ConcurrentDictionary<HostID, User> UserList { get; } = new ConcurrentDictionary<HostID, User>();
     }
 }

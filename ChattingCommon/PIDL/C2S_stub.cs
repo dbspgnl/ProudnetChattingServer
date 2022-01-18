@@ -21,6 +21,11 @@ public BeforeRmiInvocationDelegate BeforeRmiInvocation = delegate(Nettention.Pro
 		{ 
 			return false;
 		};
+		public delegate bool LoginDelegate(Nettention.Proud.HostID remote,Nettention.Proud.RmiContext rmiContext, String UserName);  
+		public LoginDelegate Login = delegate(Nettention.Proud.HostID remote,Nettention.Proud.RmiContext rmiContext, String UserName)
+		{ 
+			return false;
+		};
 	public override bool ProcessReceivedMessage(Nettention.Proud.ReceivedMessage pa, Object hostTag) 
 	{
 		Nettention.Proud.HostID remote=pa.RemoteHostID;
@@ -39,6 +44,9 @@ public BeforeRmiInvocationDelegate BeforeRmiInvocation = delegate(Nettention.Pro
 		{
         case Common.Chat:
             ProcessReceivedMessage_Chat(__msg, pa, hostTag, remote);
+            break;
+        case Common.Login:
+            ProcessReceivedMessage_Login(__msg, pa, hostTag, remote);
             break;
 		default:
 			 goto __fail;
@@ -59,7 +67,7 @@ __fail:
         ctx.encryptMode = pa.EncryptMode;
         ctx.compressMode = pa.CompressMode;
 
-        string str; Nettention.Proud.Marshaler.Read(__msg,out str);	
+        string str; ChattingCommon.Marshaler.Read(__msg,out str);	
 core.PostCheckReadMessage(__msg, RmiName_Chat);
         if(enableNotifyCallFromStub==true)
         {
@@ -100,16 +108,68 @@ core.PostCheckReadMessage(__msg, RmiName_Chat);
         AfterRmiInvocation(summary);
         }
     }
+    void ProcessReceivedMessage_Login(Nettention.Proud.Message __msg, Nettention.Proud.ReceivedMessage pa, Object hostTag, Nettention.Proud.HostID remote)
+    {
+        Nettention.Proud.RmiContext ctx = new Nettention.Proud.RmiContext();
+        ctx.sentFrom=pa.RemoteHostID;
+        ctx.relayed=pa.IsRelayed;
+        ctx.hostTag=hostTag;
+        ctx.encryptMode = pa.EncryptMode;
+        ctx.compressMode = pa.CompressMode;
+
+        String UserName; ChattingCommon.Marshaler.Read(__msg,out UserName);	
+core.PostCheckReadMessage(__msg, RmiName_Login);
+        if(enableNotifyCallFromStub==true)
+        {
+        string parameterString = "";
+        parameterString+=UserName.ToString()+",";
+        NotifyCallFromStub(Common.Login, RmiName_Login,parameterString);
+        }
+
+        if(enableStubProfiling)
+        {
+        Nettention.Proud.BeforeRmiSummary summary = new Nettention.Proud.BeforeRmiSummary();
+        summary.rmiID = Common.Login;
+        summary.rmiName = RmiName_Login;
+        summary.hostID = remote;
+        summary.hostTag = hostTag;
+        BeforeRmiInvocation(summary);
+        }
+
+        long t0 = Nettention.Proud.PreciseCurrentTime.GetTimeMs();
+
+        // Call this method.
+        bool __ret =Login (remote,ctx , UserName );
+
+        if(__ret==false)
+        {
+        // Error: RMI function that a user did not create has been called. 
+        core.ShowNotImplementedRmiWarning(RmiName_Login);
+        }
+
+        if(enableStubProfiling)
+        {
+        Nettention.Proud.AfterRmiSummary summary = new Nettention.Proud.AfterRmiSummary();
+        summary.rmiID = Common.Login;
+        summary.rmiName = RmiName_Login;
+        summary.hostID = remote;
+        summary.hostTag = hostTag;
+        summary.elapsedTime = Nettention.Proud.PreciseCurrentTime.GetTimeMs()-t0;
+        AfterRmiInvocation(summary);
+        }
+    }
 		#if USE_RMI_NAME_STRING
 // RMI name declaration.
 // It is the unique pointer that indicates RMI name such as RMI profiler.
 public const string RmiName_Chat="Chat";
+public const string RmiName_Login="Login";
        
 public const string RmiName_First = RmiName_Chat;
 		#else
 // RMI name declaration.
 // It is the unique pointer that indicates RMI name such as RMI profiler.
 public const string RmiName_Chat="";
+public const string RmiName_Login="";
        
 public const string RmiName_First = "";
 		#endif

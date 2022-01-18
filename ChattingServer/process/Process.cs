@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Nettention.Proud;
+using ChattingCommon;
 
 namespace ChattingServer.process
 {
@@ -17,15 +18,33 @@ namespace ChattingServer.process
         {
             // Stub에 등록
             C2SStub.Chat = Chat;
+            C2SStub.Login = Login;
 
             ServerLauncher.NetServer.AttachProxy(S2CProxy);
             ServerLauncher.NetServer.AttachStub(C2SStub);
         }
+
         // Chat 함수 로직 작성
         static public bool Chat(HostID remote, RmiContext rmiContext, string str)
         {
-            Console.WriteLine(str);
-            S2CProxy.NotifyChat(ServerLauncher.NetServer.GetClientHostIDs(), rmiContext, str);
+            ServerLauncher.UserList.TryGetValue(remote, out User user);
+            Console.WriteLine("{0}: {1}", user.UserName, str);
+            S2CProxy.NotifyChat(ServerLauncher.NetServer.GetClientHostIDs(), rmiContext, user.UserName, str);
+            return true;
+
+        }
+        private bool Login(HostID remote, RmiContext rmiContext, string UserName)
+        {
+            string message = string.Format("{0} entered.", UserName);
+            User user = new User(UserName, remote);
+
+            // 유저 등록
+            ServerLauncher.UserList.TryAdd(remote, user);
+
+            S2CProxy.ResponseLogin(user.HostId, rmiContext, user);
+            S2CProxy.SystemChat(ServerLauncher.NetServer.GetClientHostIDs(), RmiContext.ReliableSend, message);
+
+            Console.WriteLine(message);
             return true;
         }
         public void SystemChat(string str)

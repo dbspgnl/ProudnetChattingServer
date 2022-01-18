@@ -19,7 +19,7 @@ public bool Chat(Nettention.Proud.HostID remote,Nettention.Proud.RmiContext rmiC
 		__msg.SimplePacketMode = core.IsSimplePacketMode();
 		Nettention.Proud.RmiID __msgid= Common.Chat;
 		__msg.Write(__msgid);
-		Nettention.Proud.Marshaler.Write(__msg, str);
+		ChattingCommon.Marshaler.Write(__msg, str);
 		
 	Nettention.Proud.HostID[] __list = new Nettention.Proud.HostID[1];
 	__list[0] = remote;
@@ -34,22 +34,50 @@ public bool Chat(Nettention.Proud.HostID[] remotes,Nettention.Proud.RmiContext r
 __msg.SimplePacketMode = core.IsSimplePacketMode();
 Nettention.Proud.RmiID __msgid= Common.Chat;
 __msg.Write(__msgid);
-Nettention.Proud.Marshaler.Write(__msg, str);
+ChattingCommon.Marshaler.Write(__msg, str);
 		
 	return RmiSend(remotes,rmiContext,__msg,
 		RmiName_Chat, Common.Chat);
+}
+public bool Login(Nettention.Proud.HostID remote,Nettention.Proud.RmiContext rmiContext, String UserName)
+{
+	Nettention.Proud.Message __msg=new Nettention.Proud.Message();
+		__msg.SimplePacketMode = core.IsSimplePacketMode();
+		Nettention.Proud.RmiID __msgid= Common.Login;
+		__msg.Write(__msgid);
+		ChattingCommon.Marshaler.Write(__msg, UserName);
+		
+	Nettention.Proud.HostID[] __list = new Nettention.Proud.HostID[1];
+	__list[0] = remote;
+		
+	return RmiSend(__list,rmiContext,__msg,
+		RmiName_Login, Common.Login);
+}
+
+public bool Login(Nettention.Proud.HostID[] remotes,Nettention.Proud.RmiContext rmiContext, String UserName)
+{
+	Nettention.Proud.Message __msg=new Nettention.Proud.Message();
+__msg.SimplePacketMode = core.IsSimplePacketMode();
+Nettention.Proud.RmiID __msgid= Common.Login;
+__msg.Write(__msgid);
+ChattingCommon.Marshaler.Write(__msg, UserName);
+		
+	return RmiSend(remotes,rmiContext,__msg,
+		RmiName_Login, Common.Login);
 }
 	
 		#if USE_RMI_NAME_STRING
 // RMI name declaration.
 // It is the unique pointer that indicates RMI name such as RMI profiler.
 public const string RmiName_Chat="Chat";
+public const string RmiName_Login="Login";
        
 public const string RmiName_First = RmiName_Chat;
 		#else
 // RMI name declaration.
 // It is the unique pointer that indicates RMI name such as RMI profiler.
 public const string RmiName_Chat="";
+public const string RmiName_Login="";
        
 public const string RmiName_First = "";
 		#endif

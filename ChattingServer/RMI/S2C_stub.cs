@@ -16,13 +16,18 @@ namespace S2C
 public AfterRmiInvocationDelegate AfterRmiInvocation = delegate(Nettention.Proud.AfterRmiSummary summary) {};
 public BeforeRmiInvocationDelegate BeforeRmiInvocation = delegate(Nettention.Proud.BeforeRmiSummary summary) {};
 
-		public delegate bool NotifyChatDelegate(Nettention.Proud.HostID remote,Nettention.Proud.RmiContext rmiContext, string str);  
-		public NotifyChatDelegate NotifyChat = delegate(Nettention.Proud.HostID remote,Nettention.Proud.RmiContext rmiContext, string str)
+		public delegate bool NotifyChatDelegate(Nettention.Proud.HostID remote,Nettention.Proud.RmiContext rmiContext, string UserName, string str);  
+		public NotifyChatDelegate NotifyChat = delegate(Nettention.Proud.HostID remote,Nettention.Proud.RmiContext rmiContext, string UserName, string str)
 		{ 
 			return false;
 		};
 		public delegate bool SystemChatDelegate(Nettention.Proud.HostID remote,Nettention.Proud.RmiContext rmiContext, string str);  
 		public SystemChatDelegate SystemChat = delegate(Nettention.Proud.HostID remote,Nettention.Proud.RmiContext rmiContext, string str)
+		{ 
+			return false;
+		};
+		public delegate bool ResponseLoginDelegate(Nettention.Proud.HostID remote,Nettention.Proud.RmiContext rmiContext, ChattingCommon.User user);  
+		public ResponseLoginDelegate ResponseLogin = delegate(Nettention.Proud.HostID remote,Nettention.Proud.RmiContext rmiContext, ChattingCommon.User user)
 		{ 
 			return false;
 		};
@@ -48,6 +53,9 @@ public BeforeRmiInvocationDelegate BeforeRmiInvocation = delegate(Nettention.Pro
         case Common.SystemChat:
             ProcessReceivedMessage_SystemChat(__msg, pa, hostTag, remote);
             break;
+        case Common.ResponseLogin:
+            ProcessReceivedMessage_ResponseLogin(__msg, pa, hostTag, remote);
+            break;
 		default:
 			 goto __fail;
 		}
@@ -67,12 +75,14 @@ __fail:
         ctx.encryptMode = pa.EncryptMode;
         ctx.compressMode = pa.CompressMode;
 
-        string str; Nettention.Proud.Marshaler.Read(__msg,out str);	
+        string UserName; ChattingCommon.Marshaler.Read(__msg,out UserName);	
+string str; ChattingCommon.Marshaler.Read(__msg,out str);	
 core.PostCheckReadMessage(__msg, RmiName_NotifyChat);
         if(enableNotifyCallFromStub==true)
         {
         string parameterString = "";
-        parameterString+=str.ToString()+",";
+        parameterString+=UserName.ToString()+",";
+parameterString+=str.ToString()+",";
         NotifyCallFromStub(Common.NotifyChat, RmiName_NotifyChat,parameterString);
         }
 
@@ -89,7 +99,7 @@ core.PostCheckReadMessage(__msg, RmiName_NotifyChat);
         long t0 = Nettention.Proud.PreciseCurrentTime.GetTimeMs();
 
         // Call this method.
-        bool __ret =NotifyChat (remote,ctx , str );
+        bool __ret =NotifyChat (remote,ctx , UserName, str );
 
         if(__ret==false)
         {
@@ -117,7 +127,7 @@ core.PostCheckReadMessage(__msg, RmiName_NotifyChat);
         ctx.encryptMode = pa.EncryptMode;
         ctx.compressMode = pa.CompressMode;
 
-        string str; Nettention.Proud.Marshaler.Read(__msg,out str);	
+        string str; ChattingCommon.Marshaler.Read(__msg,out str);	
 core.PostCheckReadMessage(__msg, RmiName_SystemChat);
         if(enableNotifyCallFromStub==true)
         {
@@ -158,11 +168,62 @@ core.PostCheckReadMessage(__msg, RmiName_SystemChat);
         AfterRmiInvocation(summary);
         }
     }
+    void ProcessReceivedMessage_ResponseLogin(Nettention.Proud.Message __msg, Nettention.Proud.ReceivedMessage pa, Object hostTag, Nettention.Proud.HostID remote)
+    {
+        Nettention.Proud.RmiContext ctx = new Nettention.Proud.RmiContext();
+        ctx.sentFrom=pa.RemoteHostID;
+        ctx.relayed=pa.IsRelayed;
+        ctx.hostTag=hostTag;
+        ctx.encryptMode = pa.EncryptMode;
+        ctx.compressMode = pa.CompressMode;
+
+        ChattingCommon.User user; ChattingCommon.Marshaler.Read(__msg,out user);	
+core.PostCheckReadMessage(__msg, RmiName_ResponseLogin);
+        if(enableNotifyCallFromStub==true)
+        {
+        string parameterString = "";
+        parameterString+=user.ToString()+",";
+        NotifyCallFromStub(Common.ResponseLogin, RmiName_ResponseLogin,parameterString);
+        }
+
+        if(enableStubProfiling)
+        {
+        Nettention.Proud.BeforeRmiSummary summary = new Nettention.Proud.BeforeRmiSummary();
+        summary.rmiID = Common.ResponseLogin;
+        summary.rmiName = RmiName_ResponseLogin;
+        summary.hostID = remote;
+        summary.hostTag = hostTag;
+        BeforeRmiInvocation(summary);
+        }
+
+        long t0 = Nettention.Proud.PreciseCurrentTime.GetTimeMs();
+
+        // Call this method.
+        bool __ret =ResponseLogin (remote,ctx , user );
+
+        if(__ret==false)
+        {
+        // Error: RMI function that a user did not create has been called. 
+        core.ShowNotImplementedRmiWarning(RmiName_ResponseLogin);
+        }
+
+        if(enableStubProfiling)
+        {
+        Nettention.Proud.AfterRmiSummary summary = new Nettention.Proud.AfterRmiSummary();
+        summary.rmiID = Common.ResponseLogin;
+        summary.rmiName = RmiName_ResponseLogin;
+        summary.hostID = remote;
+        summary.hostTag = hostTag;
+        summary.elapsedTime = Nettention.Proud.PreciseCurrentTime.GetTimeMs()-t0;
+        AfterRmiInvocation(summary);
+        }
+    }
 		#if USE_RMI_NAME_STRING
 // RMI name declaration.
 // It is the unique pointer that indicates RMI name such as RMI profiler.
 public const string RmiName_NotifyChat="NotifyChat";
 public const string RmiName_SystemChat="SystemChat";
+public const string RmiName_ResponseLogin="ResponseLogin";
        
 public const string RmiName_First = RmiName_NotifyChat;
 		#else
@@ -170,6 +231,7 @@ public const string RmiName_First = RmiName_NotifyChat;
 // It is the unique pointer that indicates RMI name such as RMI profiler.
 public const string RmiName_NotifyChat="";
 public const string RmiName_SystemChat="";
+public const string RmiName_ResponseLogin="";
        
 public const string RmiName_First = "";
 		#endif

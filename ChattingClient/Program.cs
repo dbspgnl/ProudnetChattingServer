@@ -12,6 +12,9 @@ namespace Client
         static bool isConnected = false;
         static bool keepWorkerThread = true;
 
+        static bool isLoggedin = false;
+        static User me = new User();
+
         static void InitializeStub()
         {
             S2CStub.SystemChat = (HostID remote, RmiContext rmiContext, string str) =>
@@ -22,11 +25,20 @@ namespace Client
                 }
                 return true;
             };
-            S2CStub.NotifyChat = (HostID remote, RmiContext rmiContext, string str) =>
+            S2CStub.NotifyChat = (HostID remote, RmiContext rmiContext, string UserName, string str) =>
             {
                 lock (g_critSec)
                 {
-                    Console.WriteLine("> {0}", str);
+                    Console.WriteLine("{0}: {1}", UserName, str);
+                }
+                return true;
+            };
+            S2CStub.ResponseLogin = (HostID remote, RmiContext rmiContext, User user) =>
+            {
+                lock (g_critSec)
+                {
+                    isLoggedin = true;
+                    me = user;
                 }
                 return true;
             };
@@ -92,22 +104,32 @@ namespace Client
             });
             workerThread.Start();
 
+            while (!isConnected)
+                Thread.Sleep(1000);
 
+            Console.Write("UserName: ");
             while (keepWorkerThread)
             {
                 string userInput = Console.ReadLine();
-                
-                if (userInput == "q")
+                if (userInput == "")
+                    continue;
+                if (isLoggedin)
                 {
-                    keepWorkerThread = false;
+                    if (userInput == "q")
+                        keepWorkerThread = false;
+                    else
+                        C2SProxy.Chat(HostID.HostID_Server, RmiContext.ReliableSend, userInput);
                 }
                 else
                 {
-                    C2SProxy.Chat(HostID.HostID_Server, RmiContext.ReliableSend, userInput);
+                    Console.WriteLine("Login...");
+                    C2SProxy.Login(HostID.HostID_Server, RmiContext.ReliableSend, userInput);
                 }
             }
+
             workerThread.Join();
             netClient.Disconnect();
+
         }
     }
 }

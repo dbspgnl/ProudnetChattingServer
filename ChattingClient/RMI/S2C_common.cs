@@ -15,10 +15,12 @@ namespace S2C
 		// Message ID that replies to each RMI method. 
 			public const Nettention.Proud.RmiID NotifyChat = (Nettention.Proud.RmiID)3000+1;
 			public const Nettention.Proud.RmiID SystemChat = (Nettention.Proud.RmiID)3000+2;
+			public const Nettention.Proud.RmiID ResponseLogin = (Nettention.Proud.RmiID)3000+3;
 		// List that has RMI ID.
 		public static Nettention.Proud.RmiID[] RmiIDList = new Nettention.Proud.RmiID[] {
 			NotifyChat,
 			SystemChat,
+			ResponseLogin,
 		};
 	}
 }
