@@ -1,0 +1,21 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "fe4a5404-a041-483c-8dd5-7ab061b68191": {
+      "ProjectGuid": "fe4a5404-a041-483c-8dd5-7ab061b68191",
+      "DisplayName": "ChattingServer",
+      "ColorIndex": 0
+    },
+    "9ab0ad2a-2495-48c5-a7a2-1d2a8a0e023b": {
+      "ProjectGuid": "9ab0ad2a-2495-48c5-a7a2-1d2a8a0e023b",
+      "DisplayName": "ChattingCommon",
+      "ColorIndex": 1
+    },
+    "d20dac4f-da58-4fc5-bb39-5592c41a3fc2": {
+      "ProjectGuid": "d20dac4f-da58-4fc5-bb39-5592c41a3fc2",
+      "DisplayName": "ChattingClient",
+      "ColorIndex": 2
+    }
+  },
+  "NextColorIndex": 3
+}
