@@ -19,6 +19,8 @@ namespace ChattingServer.process
             // Stub에 등록
             C2SStub.Chat = Chat;
             C2SStub.Login = Login;
+            C2SStub.EnterRoom = EnterRoom;
+            C2SStub.LeaveRoom = LeaveRoom;
 
             ServerLauncher.NetServer.AttachProxy(S2CProxy);
             ServerLauncher.NetServer.AttachStub(C2SStub);
@@ -27,9 +29,14 @@ namespace ChattingServer.process
         // Chat 함수 로직 작성
         static public bool Chat(HostID remote, RmiContext rmiContext, string str)
         {
+            //ServerLauncher.UserList.TryGetValue(remote, out User user);
+            //S2CProxy.NotifyChat(ServerLauncher.NetServer.GetClientHostIDs(), rmiContext, user.UserName, str);
+            //Console.WriteLine("{0}: {1}", user.UserName, str);
+            //return true;
+
             ServerLauncher.UserList.TryGetValue(remote, out User user);
-            Console.WriteLine("{0}: {1}", user.UserName, str);
-            S2CProxy.NotifyChat(ServerLauncher.NetServer.GetClientHostIDs(), rmiContext, user.UserName, str);
+            S2CProxy.NotifyChat(GetHostIDsInRoom(user.RoomNumber), rmiContext, user.UserName, str);
+            Console.WriteLine("{0} : {1}", user.UserName, str);
             return true;
 
         }
@@ -42,11 +49,43 @@ namespace ChattingServer.process
             ServerLauncher.UserList.TryAdd(remote, user);
 
             S2CProxy.ResponseLogin(user.HostId, rmiContext, user);
-            S2CProxy.SystemChat(ServerLauncher.NetServer.GetClientHostIDs(), RmiContext.ReliableSend, message);
+            //S2CProxy.SystemChat(ServerLauncher.NetServer.GetClientHostIDs(), RmiContext.ReliableSend, message);
 
             Console.WriteLine(message);
             return true;
         }
+
+        // * 방 입실 / 퇴실 * //
+        static public bool EnterRoom(HostID remote, RmiContext rmiContext, int RoomNumber)
+        {
+            ServerLauncher.UserList.TryGetValue(remote, out User user);
+            user.RoomNumber = RoomNumber;
+            ServerLauncher.UserList.TryAdd(remote, user);
+
+            string message = string.Format("{0} entered to Room {1}", user.UserName, user.RoomNumber);
+
+            S2CProxy.SystemChat(GetHostIDsInRoom(RoomNumber), RmiContext.ReliableSend, message);
+            Console.WriteLine(message);
+            return true;
+        }
+        static public bool LeaveRoom(HostID remote, RmiContext rmiContext)
+        {
+            ServerLauncher.UserList.TryGetValue(remote, out User user);
+            user.RoomNumber = 0;
+            ServerLauncher.UserList.TryAdd(remote, user);
+            return true;
+
+        }
+        static public HostID[] GetHostIDsInRoom(int RoomNumber)
+        {
+            HostID[] users = ServerLauncher.UserList
+                .Where(p => p.Value.RoomNumber == RoomNumber)
+                .Select(p => p.Value.HostId)
+                .ToArray();
+
+            return users;
+        }
+
         public void SystemChat(string str)
         {
             S2CProxy.SystemChat(ServerLauncher.NetServer.GetClientHostIDs(), RmiContext.ReliableSend, str);

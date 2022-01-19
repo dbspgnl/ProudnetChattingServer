@@ -15,10 +15,14 @@ namespace C2S
 		// Message ID that replies to each RMI method. 
 			public const Nettention.Proud.RmiID Chat = (Nettention.Proud.RmiID)2000+1;
 			public const Nettention.Proud.RmiID Login = (Nettention.Proud.RmiID)2000+2;
+			public const Nettention.Proud.RmiID EnterRoom = (Nettention.Proud.RmiID)2000+3;
+			public const Nettention.Proud.RmiID LeaveRoom = (Nettention.Proud.RmiID)2000+4;
 		// List that has RMI ID.
 		public static Nettention.Proud.RmiID[] RmiIDList = new Nettention.Proud.RmiID[] {
 			Chat,
 			Login,
+			EnterRoom,
+			LeaveRoom,
 		};
 	}
 }

@@ -113,16 +113,34 @@ namespace Client
                 string userInput = Console.ReadLine();
                 if (userInput == "")
                     continue;
+
                 if (isLoggedin)
                 {
                     if (userInput == "q")
                         keepWorkerThread = false;
+                    else if (me.RoomNumber == 0)
+                    {
+                        try
+                        {
+                            int RoomNumber = Int32.Parse(userInput);
+                            C2SProxy.EnterRoom(HostID.HostID_Server, RmiContext.ReliableSend, RoomNumber);
+                            me.RoomNumber = RoomNumber;
+                        }
+                        catch (FormatException ex)
+                        {
+
+                        }
+                    }
                     else
+                    {
+                        Console.Write("Chat to Room: {0}\n", me.RoomNumber);
                         C2SProxy.Chat(HostID.HostID_Server, RmiContext.ReliableSend, userInput);
+                    }
                 }
                 else
                 {
                     Console.WriteLine("Login...");
+                    Console.WriteLine("Please enter your room number.");
                     C2SProxy.Login(HostID.HostID_Server, RmiContext.ReliableSend, userInput);
                 }
             }
